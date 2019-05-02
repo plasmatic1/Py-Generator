@@ -1,2 +1,2 @@
 def run():
-    addline(N, Q)
+    wline(N, Q)

@@ -1,6 +1,7 @@
 import unittest
 import config_parser
 import param_parser
+import util.seq
 
 
 def test_data(file_name):
@@ -71,6 +72,30 @@ class TestIsNumber(unittest.TestCase):
         for test, res in cases:
             self.assertEqual(param_parser._is_float(test), res,
                              'Failed test of number \'%s\'.  Expected %s' % (test, str(res)))
+
+
+class TestUnique(unittest.TestCase):
+    RANGE = range(1, int(1e5))
+    SEQ_LEN = 100
+    RAND_CNT = 1000
+
+    def __test(self, mode):
+        gen = util.seq.Unique(TestUnique.RANGE, mode)
+        seq = gen.seq(TestUnique.SEQ_LEN)
+        used = set(seq)
+        self.assertEqual(len(seq), len(used), 'Duplicate sequence!')
+        self.assertEqual(len(seq), TestUnique.SEQ_LEN)
+
+        for _ in range(TestUnique.RAND_CNT):
+            v = gen.next()
+            self.assertNotIn(v, used, 'Duplicate random!')
+            used.add(v)
+
+    def test_mode0(self):
+        self.__test(0)
+
+    def test_mode1(self):
+        self.__test(1)
 
 
 if __name__ == '__main__':

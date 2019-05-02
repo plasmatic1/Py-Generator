@@ -23,6 +23,9 @@ def mutable_type(type_):
 
     for k, v in type_.__dir__.items():
         if k not in SKIP_FIELDS:
-            setattr(Mutable, k, wrap_func(v))
+            if hasattr(v, '__call__'):
+                setattr(Mutable, k, wrap_func(v))
+            else:
+                setattr(Mutable, k, v)
 
     return Mutable

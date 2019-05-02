@@ -1,4 +1,17 @@
 import param_parser
+import util.seq
+
+
+def insert_module(recipient, module):
+    """
+    Inserts the module into the recipient (another module).  This is akin to doing "from module import *" in the recipient python file
+    :param recipient: The recipient module
+    :param module: The module to insert
+    :return:
+    """
+    for attr, val in module.__dict__.items():
+        if not (attr.startswith('__') and attr.endswith('__')):  # Magic attributes are skipped
+            setattr(recipient, attr, val)
 
 
 class Generator:
@@ -23,7 +36,7 @@ class Generator:
         """
         Writes a sequence to the test data separated by a delimiter (with a space by default)
         :param seq: The sequence to write
-        :param sep: THe separator
+        :param sep: The separator
         :return:
         """
         self.data += sep.join(map(str, seq))
@@ -58,6 +71,7 @@ class Generator:
             setattr(self.generator, key, param_parser.process_param(val))
 
         # TODO: Other library functions
+        insert_module(self.generator, util.seq)
 
         for func in self.libs:
             setattr(self.generator, func.__name__, func)
