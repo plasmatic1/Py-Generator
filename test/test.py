@@ -11,9 +11,7 @@ def test_data(file_name):
 
 class TestConfig(unittest.TestCase):
     def test_config(self):
-        with open('sample_config.yml') as f:
-            config_data = f.read()
-        config = config_parser.Parser(config_data)
+        config = config_parser.Parser('sample_config.yml')
         config.make_cases()
 
         # Testing
@@ -31,6 +29,11 @@ class TestConfig(unittest.TestCase):
             self.assertTrue(1 <= a <= 10)
             self.assertEqual(b, 100)
 
+        config.delete_cases()
+
+        # Test the auto_import function
+        config = config_parser.Parser('sample_config2.yml') # TODO: Fix auto_import always importing even when set to false
+        config.make_cases()
         config.delete_cases()
 
 
@@ -96,6 +99,10 @@ class TestUnique(unittest.TestCase):
 
     def test_mode1(self):
         self.__test(1)
+
+
+class TestGraph(unittest.TestCase):
+    pass  # TODO: Implement graph unit testing
 
 
 if __name__ == '__main__':

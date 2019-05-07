@@ -16,6 +16,8 @@
           <option value="test.sample_generator.N" />
           <option value="test.sample_generator.Q" />
           <option value="test.sample_generator.wline" />
+          <option value="test.sample_generator.Tree" />
+          <option value="gs" />
         </list>
       </option>
     </inspection_tool>

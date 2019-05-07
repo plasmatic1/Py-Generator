@@ -1,0 +1,11 @@
+input_file_format: '%d.in'
+output_file_format: '%d.out'
+input_generator: 'sample_generator.py'
+output_generator: null
+generator_args:
+  auto_import: false
+cases:
+  - vars: {N: 1, Q: 1}
+  - vars: {N: 15, Q: 5}
+  - amount: 5
+    vars: {N: 1~10, Q: 100}

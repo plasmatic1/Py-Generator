@@ -1,5 +1,7 @@
 import param_parser
 import util.seq
+import util.graph
+import random
 
 
 def insert_module(recipient, module):
@@ -15,14 +17,24 @@ def insert_module(recipient, module):
 
 
 class Generator:
-    def __init__(self, file):
+    def __init__(self, file, **kwargs):
         """
-        Initializes generator
-        :param file: The source generator, it has to be a path to a .py file
+        Initializes generator object
+        :param file: The generator module, it has to be a path to a .py file
+        :param auto_import: Whether the generator will automatically import certain functionality into the generator source file.  Defaults to True
         """
         self.generator = __import__(file.split('.')[0])
         self.data = ''
-        self.libs = [self.wobj, self.wline, self.wf, self.wseq]
+
+        for func in [self.wobj, self.wline, self.wf, self.wseq]:  # These functions are required to generate data
+            setattr(self.generator, func.__name__, func)
+
+        # Auto-importing functions
+        # TODO: Other library functions
+        if kwargs.get('auto_import', True):
+            insert_module(self.generator, util.seq)
+            insert_module(self.generator, util.graph)
+            insert_module(self.generator, random)
 
     def wobj(self, arg):
         """
@@ -69,12 +81,6 @@ class Generator:
         # Setting variables
         for key, val in vars_.items():
             setattr(self.generator, key, param_parser.process_param(val))
-
-        # TODO: Other library functions
-        insert_module(self.generator, util.seq)
-
-        for func in self.libs:
-            setattr(self.generator, func.__name__, func)
 
         self.data = ''
         self.generator.run()

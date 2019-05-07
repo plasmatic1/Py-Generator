@@ -4,14 +4,16 @@ import os
 
 
 class Parser:
-    def __init__(self, data):
+    def __init__(self, data_file):
         """
         Initializes parser
-        :param data: The YAML text of the configuration
+        :param data_file: The configuration file (should be a .yml file)
         """
-
+        with open(data_file) as f:
+            data = f.read()
         self.data = yaml.safe_load(data)
-        self.generator = generator.Generator(self.data['input_generator'])
+        self.generator = generator.Generator(self.data['input_generator'],
+                                             **(self.data['generator_args'] if 'generator_args' in self.data else {}))
 
     def make_cases(self):
         """
@@ -38,6 +40,8 @@ class Parser:
                     pass  # TODO: Output generator.  Use PyTester run.py for this
         else:
             print('Missing generator argument or output file format argument, no output will be created...')
+
+        # Encrypting (Xorring) queries for online-only problems
 
     def delete_cases(self):
         """

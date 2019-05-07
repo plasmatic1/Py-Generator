@@ -46,4 +46,5 @@ class IntMatcher:
 
 class Queries:
     def __init__(self):
-        pass
+        self.type_generators = {}
+        # TODO: Implement query generation (not sure how to do this really)
