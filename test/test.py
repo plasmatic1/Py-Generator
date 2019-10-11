@@ -10,7 +10,15 @@ def test_data(file_name):
 
 
 class TestConfig(unittest.TestCase):
-    def test_config(self):
+    def test_config_error(self):
+        # Test the auto_import function and other invalid state
+        config = config_parser.Parser('sample_config2.yml')
+        self.assertRaises(AttributeError, lambda: config.case_count)
+        self.assertRaises(NameError, config.make_cases)
+        config.delete_cases()
+
+    def test_config_generate(self):
+        # Testing config stuff
         config = config_parser.Parser('sample_config.yml')
         config.make_cases()
 
@@ -31,48 +39,20 @@ class TestConfig(unittest.TestCase):
 
         config.delete_cases()
 
-        # Test the auto_import function
-        config = config_parser.Parser('sample_config2.yml') # TODO: Fix auto_import always importing even when set to false
-        config.make_cases()
-        config.delete_cases()
-
 
 class TestIsNumber(unittest.TestCase):
-    def test_is_int(self):
-        cases = [
-            ('1', True),
-            ('2.', False),
-            ('-1', True),
-            ('12312313', True),
-            ('-123.34', False),
-            ('1af', False),
-            ('b5abab', False),
-            ('+123', True),
-            ('-12-2', False),
-            ('0', True),
-            ('+12+2', False)
-        ]
+    INT_CASES = [('1', True), ('2.', False), ('-1', True), ('12312313', True), ('-123.34', False), ('1af', False),
+                 ('b5abab', False), ('+123', True), ('-12-2', False), ('0', True), ('+12+2', False)]
+    FLOAT_CASES = [('1.21', True), ('2.', True), ('-1', False), ('12312313', False), ('-123.34', True), ('1af', False),
+                   ('b5', False), ('+123.539', True), ('-12-2', False), ('0', False), ('+12+2', False)]
 
-        for test, res in cases:
+    def test_is_int(self):
+        for test, res in TestIsNumber.INT_CASES:
             self.assertEqual(param_parser._is_int(test), res,
                              'Failed test of number \'%s\'.  Expected %s' % (test, str(res)))
 
     def test_is_float(self):
-        cases = [
-            ('1.21', True),
-            ('2.', True),
-            ('-1', False),
-            ('12312313', False),
-            ('-123.34', True),
-            ('1af', False),
-            ('b5', False),
-            ('+123.539', True),
-            ('-12-2', False),
-            ('0', False),
-            ('+12+2', False)
-        ]
-
-        for test, res in cases:
+        for test, res in TestIsNumber.FLOAT_CASES:
             self.assertEqual(param_parser._is_float(test), res,
                              'Failed test of number \'%s\'.  Expected %s' % (test, str(res)))
 

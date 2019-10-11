@@ -1,12 +1,13 @@
 import yaml
-import generator
+from tool import generator
 import os
 
 
 class Parser:
-    def __init__(self, data_file):
+    def __init__(self, data_file, debug_output_stream=None):
         """
         Initializes parser
+        :param debug_output_stream: The I/O stream where debug info will be sent, or none if not specified
         :param data_file: The configuration file (should be a .yml file)
         """
         with open(data_file) as f:
@@ -14,13 +15,14 @@ class Parser:
         self.data = yaml.safe_load(data)
         self.generator = generator.Generator(self.data['input_generator'],
                                              **(self.data['generator_args'] if 'generator_args' in self.data else {}))
+        self.debug_output_stream = debug_output_stream
+        self.__case_count = -1
 
     def make_cases(self):
         """
         Uses the config to generate cases.  Case files will be created
         :return: None
         """
-
         counter = 1
         for case in self.data['cases']:
             amount = case.get('amount', 1)
@@ -39,16 +41,19 @@ class Parser:
                 with open(file_format % i, 'w') as f:
                     pass  # TODO: Output generator.  Use PyTester run.py for this
         else:
-            print('Missing generator argument or output file format argument, no output will be created...')
+            self.debugf('Missing generator argument or output file format argument, no output will be created...')
 
-        # Encrypting (Xorring) queries for online-only problems
+    def xor_cases(self):
+        raise NotImplementedError  # TODO: Implement xorring of files
+
+    def validate_cases(self):
+        raise NotImplementedError  # Todo: Implement validation structure
 
     def delete_cases(self):
         """
         Deletes generated case files.  Mostly for testing
         :return: None
         """
-
         counter = 1
         in_format = self.data['input_file_format']
         out_format = self.data['output_file_format']
@@ -56,23 +61,52 @@ class Parser:
         for case in self.data['cases']:
             amount = case.get('amount', 1)
             for i in range(counter, counter + amount):
-                silent_remove(in_format % i, 'Could not find %path')
-                silent_remove(out_format % i, 'Could not find %path')
+                if not silent_remove(in_format % i):
+                    self.debugf('Could not find %s', in_format % i)
+                if not silent_remove(out_format % i):
+                    self.debugf('Could not find %s', out_format % i)
 
             counter += amount
 
+    @property
+    def case_count(self):
+        """
+        Getter for case_count property.  Returns -1 if not initialized
+        :return: The # of cases
+        """
+        if self.__case_count == -1:
+            raise AttributeError('Case count not initialized! (make_cases needs to be called first)')
+        return self.__case_count
 
-def silent_remove(path, msg=None):
+    @case_count.setter
+    def set_case_count(self, cnt):
+        """
+        Default setter for case_count
+        :param cnt: The new case_count
+        :return:
+        """
+        self.__case_count = cnt
+
+    def debugf(self, format_, *args, end='\n'):
+        """
+        Similar to printf but writes to the debug stream.  Note that an ending is added to the format, defaults to '\n'
+        :param format_: The format
+        :param args: The arguments (what you would find in printf)
+        :param end: The 'end' that's appended after the format.  Defaults to '\n'
+        :return:
+        """
+        if self.debug_output_stream:
+            self.debug_output_stream.write(format_ % args + end)
+
+
+def silent_remove(path):
     """
-    os.remove() but does not have a brain aneurysm when a file doesn't exist
-
+    os.remove() but does not have a brain aneurysm when a file doesn't exist.  Returns whether the command succeeded
     :param path: Path to remove
-    :param msg: Optional message (%path substituted with file name) to output when file doesn't exist
-    :return: None
+    :return: True if successful, False if the file was not found
     """
-
     try:
         os.remove(path)
+        return True
     except FileNotFoundError:
-        if msg:
-            print(msg.replace('%path', path))
+        return False
